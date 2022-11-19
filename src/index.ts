@@ -1,7 +1,24 @@
 import { PrismaClient } from "@prisma/client";
 import express from "express";
 
-const prisma = new PrismaClient();
+declare global {
+  namespace NodeJS {
+    interface Global {
+      prisma: any;
+    }
+  }
+}
+
+let prisma: PrismaClient;
+
+if (process.env.NODE_ENV === "production") {
+  prisma = new PrismaClient();
+} else {
+  if (!global.prisma) {
+    global.prisma = new PrismaClient();
+  }
+  prisma = global.prisma;
+}
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -67,7 +84,7 @@ app.get("/", async (req, res) => {
     GET, POST /todos
     GET, PUT, DELETE /todos/:id
   </pre>
-  `.trim(),
+  `.trim()
   );
 });
 
